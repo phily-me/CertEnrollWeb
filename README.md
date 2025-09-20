@@ -1,0 +1,146 @@
+# Zertifikats-Server - Certbot
+
+Hey Gordan! Hier ist dein Zertifikats-Server Setup. Läuft super mit Portainer und ist perfekt für Windows Server Integration.
+
+## Was macht das Ding?
+
+- **HTTP Server (Port 80):** Öffentlicher Download von Zertifikaten und Sperrlisten
+- **WebDAV Server (Port 8080):** Authentifizierter Upload für deine Windows Server
+
+## Portainer Deployment
+
+1. **In Portainer → Stacks → Add Stack**
+2. **Name:** `certbot`
+3. **Paste diesen Code:**
+
+```yaml
+services:
+  certweb:
+    build:
+      context: https://github.com/phily-me/certweb.git  # Dein Git Repo
+      dockerfile: Dockerfile
+    ports:
+      - "10080:80"     # HTTP Download (öffentlich)
+      - "18080:8080"   # WebDAV Upload (authentifiziert)
+    volumes:
+      - cert-data:/var/www/certs
+    environment:
+      - CERT_USER=gordan           # WebDAV Username
+      - CERT_PASS=deinsicheresPW   # WebDAV Passwort
+    restart: unless-stopped
+
+volumes:
+  cert-data:
+```
+
+4. **Environment Variables setzen:**
+   - `CERT_USER`: Dein WebDAV Username
+   - `CERT_PASS`: Dein WebDAV Passwort
+
+5. **Deploy** klicken - Portainer pullt automatisch aus Git und baut das Image!
+
+
+## Windows Server Integration
+
+### Port Mapping für deinen Windows Server
+
+**Wichtig:** Ersetze `YOUR-DOCKER-HOST` mit der IP deines Docker/Portainer Servers!
+
+| Service | Docker Port | Windows Zugriff | Zweck |
+|---------|------------|-----------------|-------|
+| HTTP | 80 (intern) → 10080 (extern) | `http://YOUR-DOCKER-HOST:10080/` | Download von Zertifikaten |
+| WebDAV | 8080 (intern) → 18080 (extern) | `http://YOUR-DOCKER-HOST:18080/` | Upload von Zertifikaten |
+
+### Windows PowerShell Upload (empfohlen!)
+
+```powershell
+# === Zertifikate hochladen ===
+
+# Single File Upload
+$server = "YOUR-DOCKER-HOST"
+$user = "gordan"
+$pass = "deinpasswort"
+
+Invoke-RestMethod -Uri "http://$server:18080/rootca.crt" `
+  -Method PUT `
+  -Credential (New-Object System.Management.Automation.PSCredential($user, (ConvertTo-SecureString $pass -AsPlainText -Force))) `
+  -InFile "C:\PKI\rootca.crt"
+
+# Bulk Upload aller CRT-Dateien
+$cred = New-Object System.Management.Automation.PSCredential($user, (ConvertTo-SecureString $pass -AsPlainText -Force))
+
+Get-ChildItem "C:\PKI\*.crt" | ForEach-Object {
+    Write-Host "Uploading $($_.Name)..."
+    try {
+        Invoke-RestMethod -Uri "http://$server:18080/$($_.Name)" `
+          -Method PUT `
+          -Credential $cred `
+          -InFile $_.FullName
+        Write-Host "✅ $($_.Name) uploaded" -ForegroundColor Green
+    } catch {
+        Write-Host "❌ $($_.Name) failed: $($_.Exception.Message)" -ForegroundColor Red
+    }
+}
+```
+
+### Als Netzlaufwerk einbinden
+
+```batch
+REM WebDAV als Laufwerk Z: mounten  
+net use Z: \\YOUR-DOCKER-HOST@18080\DavWWWRoot /user:gordan deinpasswort
+
+REM Dateien kopieren
+copy "C:\PKI\*.crt" Z:\
+copy "C:\PKI\*.crl" Z:\
+
+REM Laufwerk wieder trennen
+net use Z: /delete
+```
+
+### Automatisierung mit Scheduled Task
+
+**Erstelle `upload-certs.ps1`:**
+```powershell
+# Automatischer Upload alle 4 Stunden
+$server = "YOUR-DOCKER-HOST"
+$sourceDir = "C:\PKI"
+$user = "gordan" 
+$pass = "deinpasswort"
+
+$cred = New-Object System.Management.Automation.PSCredential($user, (ConvertTo-SecureString $pass -AsPlainText -Force))
+
+# Upload aller neuen/geänderten Zertifikate
+Get-ChildItem "$sourceDir\*.crt", "$sourceDir\*.crl" | Where-Object { $_.LastWriteTime -gt (Get-Date).AddHours(-4) } | ForEach-Object {
+    Write-Host "$(Get-Date) - Uploading $($_.Name)..."
+    try {
+        Invoke-RestMethod -Uri "http://$server:18080/$($_.Name)" -Method PUT -Credential $cred -InFile $_.FullName
+        Write-EventLog -LogName Application -Source "CertUpload" -EventId 1 -Message "Successfully uploaded $($_.Name)"
+    } catch {
+        Write-EventLog -LogName Application -Source "CertUpload" -EventId 2 -EntryType Error -Message "Failed to upload $($_.Name): $($_.Exception.Message)"
+    }
+}
+```
+
+**Scheduled Task erstellen:**
+```cmd
+schtasks /create /tn "Zertifikat Upload" /tr "powershell.exe -ExecutionPolicy Bypass -File C:\Scripts\upload-certs.ps1" /sc hourly /it /ru SYSTEM
+```
+
+## Download/Abruf der Zertifikate 📥
+
+### Für Clients/Browser
+```
+http://YOUR-DOCKER-HOST:10080/myfile.crt
+```
+
+### Windows PowerShell Download
+```powershell
+# Single Download
+Invoke-WebRequest -Uri "http://YOUR-DOCKER-HOST:10080/myfile.crt" -OutFile "C:\Downloads\myfile.crt"
+
+# Bulk Download
+$certs = @("rootca.crt", "intermediate.crt", "revocation.crl")
+$certs | ForEach-Object {
+    Invoke-WebRequest -Uri "http://YOUR-DOCKER-HOST:10080/$_" -OutFile "C:\Downloads\$_"
+}
+```
