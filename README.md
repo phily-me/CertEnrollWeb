@@ -1,4 +1,4 @@
-# Zertifikats-Server - Certbot
+# Zertifikats-Server - certweb
 
 Hey Gordan! Hier ist dein Zertifikats-Server Setup. Läuft super mit Portainer und ist perfekt für Windows Server Integration.
 
@@ -10,7 +10,7 @@ Hey Gordan! Hier ist dein Zertifikats-Server Setup. Läuft super mit Portainer u
 ## Portainer Deployment
 
 1. **In Portainer → Stacks → Add Stack**
-2. **Name:** `certbot`
+2. **Name:** `certweb`
 3. **Paste diesen Code:**
 
 ```yaml
