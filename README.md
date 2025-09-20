@@ -17,7 +17,7 @@ Hey Gordan! Hier ist dein Zertifikats-Server Setup. Läuft super mit Portainer u
 services:
   certweb:
     build:
-      context: https://github.com/phily-me/certweb.git  # Dein Git Repo
+      context: https://github.com/phily-me/certweb.git  # Dieses git repo
       dockerfile: Dockerfile
     ports:
       - "10080:80"     # HTTP Download (öffentlich)
@@ -51,7 +51,7 @@ volumes:
 | HTTP | 80 (intern) → 10080 (extern) | `http://YOUR-DOCKER-HOST:10080/` | Download von Zertifikaten |
 | WebDAV | 8080 (intern) → 18080 (extern) | `http://YOUR-DOCKER-HOST:18080/` | Upload von Zertifikaten |
 
-### Windows PowerShell Upload (empfohlen!)
+### Windows PowerShell Upload
 
 ```powershell
 # === Zertifikate hochladen ===
@@ -126,7 +126,7 @@ Get-ChildItem "$sourceDir\*.crt", "$sourceDir\*.crl" | Where-Object { $_.LastWri
 schtasks /create /tn "Zertifikat Upload" /tr "powershell.exe -ExecutionPolicy Bypass -File C:\Scripts\upload-certs.ps1" /sc hourly /it /ru SYSTEM
 ```
 
-## Download/Abruf der Zertifikate 📥
+## Download der Zertifikate
 
 ### Für Clients/Browser
 ```
