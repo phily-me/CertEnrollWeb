@@ -23,7 +23,7 @@ services:
       - "10080:80"     # HTTP Download (öffentlich)
       - "18080:8080"   # WebDAV Upload (authentifiziert)
     volumes:
-      - cert-data:/var/www/certs
+      - cert-data:/var/www/certsrv
     environment:
       - CERT_USER=gordan           # WebDAV Username
       - CERT_PASS=deinsicheresPW   # WebDAV Passwort
