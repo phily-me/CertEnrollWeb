@@ -21,8 +21,8 @@ chmod 644 /var/lib/nginx/htpasswd
 echo "✅ htpasswd created for user: $CERT_USER"
 
 # Create cert directory
-mkdir -p /var/www/certs
-chmod 755 /var/www/certs
+mkdir -p /var/www/certsrv
+chmod 755 /var/www/certsrv
 
 # Test nginx config
 nginx -t || exit 1
