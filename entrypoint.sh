@@ -24,15 +24,15 @@ echo "=== Certificate Server Startup ==="
 echo "Running as UID:GID = $PUID:$PGID"
 
 # Validate required environment variables
-if [ -z "$CERT_USER" ] || [ -z "$CERT_PASS" ]; then
-    echo "ERROR: CERT_USER and CERT_PASS environment variables must be set!"
+if [ -z "$USER_WEBDAV" ] || [ -z "$PASS_WEBDAV" ]; then
+    echo "ERROR: USER_WEBDAV and PASS_WEBDAV environment variables must be set!"
     exit 1
 fi
 
 # Generate htpasswd file
-echo "Creating credentials for user: $CERT_USER"
-HASH=$(echo "$CERT_PASS" | openssl passwd -apr1 -stdin)
-echo "$CERT_USER:$HASH" > /var/lib/nginx/htpasswd
+echo "Creating credentials for user: $USER_WEBDAV"
+HASH=$(echo "$PASS_WEBDAV" | openssl passwd -apr1 -stdin)
+echo "$USER_WEBDAV:$HASH" > /var/lib/nginx/htpasswd
 chmod 644 /var/lib/nginx/htpasswd
 chown nginx-user:nginx-user /var/lib/nginx/htpasswd
 echo "✅ htpasswd created"

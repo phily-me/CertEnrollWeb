@@ -25,8 +25,8 @@ services:
     volumes:
       - cert-data:/var/www/certsrv
     environment:
-      - CERT_USER=${USER_WEBDAV}     # WebDAV Username
-      - CERT_PASS=${PASS_WEBDAV}     # WebDAV Passwort
+      - USER_WEBDAV=${USER_WEBDAV}     # WebDAV Username
+      - PASS_WEBDAV=${PASS_WEBDAV}     # WebDAV Passwort
     restart: unless-stopped
 
 volumes:
@@ -34,8 +34,8 @@ volumes:
 ```
 
 4. **Environment Variables setzen:**
-   - `CERT_USER`: Dein WebDAV Username
-   - `CERT_PASS`: Dein WebDAV Passwort
+   - `USER_WEBDAV`: Dein WebDAV Username
+   - `PASS_WEBDAV`: Dein WebDAV Passwort
 
 5. **Deploy** klicken - Portainer pullt automatisch aus Git und baut das Image!
 

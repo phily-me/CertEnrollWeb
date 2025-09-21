@@ -4,8 +4,8 @@ services:
       context: .
       dockerfile: Dockerfile
     environment:
-      - CERT_USER=gordan
-      - CERT_PASS=securepassword123
+      - USER_WEBDAV=gordan
+      - PASS_WEBDAV=securepassword123
       - PUID=${UID:-1000}
       - PGID=${GID:-1000}
     ports:
