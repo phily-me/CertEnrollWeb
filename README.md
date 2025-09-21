@@ -25,8 +25,8 @@ services:
     volumes:
       - cert-data:/var/www/certsrv
     environment:
-      - CERT_USER=gordan           # WebDAV Username
-      - CERT_PASS=deinsicheresPW   # WebDAV Passwort
+      - CERT_USER=${USER_WEBDAV}     # WebDAV Username
+      - CERT_PASS=${PASS_WEBDAV}     # WebDAV Passwort
     restart: unless-stopped
 
 volumes:
