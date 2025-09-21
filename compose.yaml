@@ -1,5 +1,6 @@
   services:
     certsrvweb:
+      pull_policy: build
       build:
         context: https://github.com/phily-me/certsrvweb.git
         dockerfile: Dockerfile
