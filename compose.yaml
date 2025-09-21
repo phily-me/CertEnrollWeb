@@ -1,7 +1,7 @@
   services:
-    certweb:
+    certsrvweb:
       build:
-        context: https://github.com/phily-me/certweb.git
+        context: https://github.com/phily-me/certsrvweb.git
         dockerfile: Dockerfile
       environment:
         - CERT_USER=gordan
