@@ -15,7 +15,7 @@ RUN addgroup -g 1000 nginx-user && \
 USER nginx-user
 
 # Create necessary directories with correct permissions
-RUN mkdir -p /var/www/certs \
+RUN mkdir -p /var/www/certsrv \
              /var/cache/nginx \
              /var/log/nginx \
              /var/lib/nginx \
