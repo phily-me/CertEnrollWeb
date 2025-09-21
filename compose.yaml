@@ -4,13 +4,13 @@
         context: https://github.com/phily-me/certsrvweb.git
         dockerfile: Dockerfile
       environment:
-        - CERT_USER=gordan
-        - CERT_PASS=securepassword123
+        - CERT_USER=${USER_WEBDAV}
+        - CERT_PASS=${PASS_WEBDAV}
       ports:
         - "10080:80"
         - "18080:8080"  # WebDAV Port
       volumes:
-        - cert-data:/var/www/certs
+        - cert-data:/var/www/certsrv
       user: "1000:1000"
       restart: unless-stopped
 
