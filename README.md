@@ -1,4 +1,4 @@
-# Zertifikats-Server - certweb
+# Zertifikats-Server - certsrvweb
 
 Hey Gordan! Hier ist dein Zertifikats-Server Setup. Läuft super mit Portainer und ist perfekt für Windows Server Integration.
 
