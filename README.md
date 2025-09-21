@@ -10,14 +10,14 @@ Hey Gordan! Hier ist dein Zertifikats-Server Setup. Läuft super mit Portainer u
 ## Portainer Deployment
 
 1. **In Portainer → Stacks → Add Stack**
-2. **Name:** `certweb`
+2. **Name:** `certsrvweb`
 3. **Paste diesen Code:**
 
 ```yaml
 services:
-  certweb:
+  certsrvweb:
     build:
-      context: https://github.com/phily-me/certweb.git  # Dieses git repo
+      context: https://github.com/phily-me/certsrvweb.git  # Dieses git repo
       dockerfile: Dockerfile
     ports:
       - "10080:80"     # HTTP Download (öffentlich)
