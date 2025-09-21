@@ -3,7 +3,6 @@
       build:
         context: https://github.com/phily-me/certweb.git
         dockerfile: Dockerfile
-      container_name: certweb
       environment:
         - CERT_USER=gordan
         - CERT_PASS=securepassword123

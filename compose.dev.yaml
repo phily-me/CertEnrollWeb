@@ -3,13 +3,12 @@
       build:
         context: .
         dockerfile: Dockerfile
-      container_name: certweb
       environment:
         - CERT_USER=gordan
         - CERT_PASS=securepassword123
       ports:
-        - "10080:80"
-        - "18080:8080"  # WebDAV Port
+        - "80"
+        - "8080"  # WebDAV Port
       volumes:
         - cert-data:/var/www/certs
       user: "1000:1000"
