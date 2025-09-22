@@ -61,11 +61,11 @@ $server = "YOUR-DOCKER-HOST"
 $user = "gordan"
 $pass = "deinpasswort"
 
-Invoke-RestMethod -Uri "http://$server:18080/rootca.crt" `
+Invoke-RestMethod -Uri "http://$server:18080/myfile.crt" `
   -Method PUT `
   -Credential (New-Object System.Management.Automation.PSCredential($user, `
     (ConvertTo-SecureString $pass -AsPlainText -Force))) `
-  -InFile "C:\PKI\rootca.crt"
+  -InFile "C:\PKI\myfile.crt"
 
 # Bulk Upload aller CRT-Dateien
 $cred = New-Object System.Management.Automation.PSCredential($user, `
@@ -141,6 +141,37 @@ schtasks /create /tn "Zertifikat Upload" ^
   /sc hourly /it /ru SYSTEM
 ```
 
+### Using curl (Linux/macOS/Windows)
+
+```bash
+# === Download certificates ===
+server="YOUR-DOCKER-HOST"
+
+# Single file download
+curl -o myfile.crt "http://$server:10080/myfile.crt"
+
+# Download multiple files
+for cert in myfile.crt intermediate.crt revocation.crl; do
+    echo "Downloading $cert..."
+    curl -o "$cert" "http://$server:10080/$cert"
+done
+
+# === Upload certificates ===
+user="gordan"
+pass="securepassword123"
+
+# Single file upload
+curl -T myfile.crt "http://$server:18080/myfile.crt" --user "$user:$pass"
+
+# Upload multiple files
+for file in *.crt *.crl; do
+    if [ -f "$file" ]; then
+        echo "Uploading $file..."
+        curl -T "$file" "http://$server:18080/$file" --user "$user:$pass"
+    fi
+done
+```
+
 ## Download der Zertifikate
 
 ### Für Clients/Browser
@@ -156,7 +187,7 @@ http://YOUR-DOCKER-HOST:10080/myfile.crt
 Invoke-WebRequest -Uri "http://YOUR-DOCKER-HOST:10080/myfile.crt" -OutFile "C:\Downloads\myfile.crt"
 
 # Bulk Download
-$certs = @("rootca.crt", "intermediate.crt", "revocation.crl")
+$certs = @("myfile.crt", "intermediate.crt", "revocation.crl")
 $certs | ForEach-Object {
     Invoke-WebRequest -Uri "http://YOUR-DOCKER-HOST:10080/$_" -OutFile "C:\Downloads\$_"
 }
