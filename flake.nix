@@ -17,7 +17,7 @@
       
       perSystem = { config, self', inputs', pkgs, system, ... }: {
         devshells.default = {
-          name = "certsrvweb-lint-env";
+          name = "dev";
           
           motd = ''
             🔧 Dev Environment
@@ -85,14 +85,7 @@
               name = "setup-hooks";
               help = "Set up pre-commit hooks for automatic linting";
               command = ''
-                echo "Setting up pre-commit hooks..."
-                mkdir -p .git/hooks
-                cat > .git/hooks/pre-commit << 'EOF'
-            #!/bin/sh
-            ./lint --staged --check-only
-            EOF
-                chmod +x .git/hooks/pre-commit
-                echo "✅ Pre-commit hook installed!"
+                ./setup-hooks "$@"
               '';
             }
           ];

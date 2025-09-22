@@ -1,0 +1,74 @@
+#!/bin/bash
+
+#---
+# description: "Set up pre-commit hooks for automatic linting"
+# argument-hint: ""
+# category: "setup"
+# complexity: "simple"
+# requires: []
+#---
+
+# Set up pre-commit hooks for automatic linting
+# Creates git hooks to run linting on staged files before commits
+
+set -euo pipefail
+
+echo "🔧 Setting up pre-commit hooks..."
+
+# Check if we're in a git repository
+if [[ ! -d ".git" ]]; then
+    echo "❌ Error: Not in a git repository. Please run this from the project root."
+    exit 1
+fi
+
+# Create hooks directory if it doesn't exist
+mkdir -p .git/hooks
+
+# Create pre-commit hook
+cat > .git/hooks/pre-commit << 'EOF'
+#!/bin/sh
+# Pre-commit hook for automatic linting
+# Runs linting on staged files before allowing commit
+
+echo "🔍 Running pre-commit linting..."
+
+# Run lint on staged files only
+if command -v scripts/lint >/dev/null 2>&1; then
+    scripts/lint --staged --check-only
+elif [[ -x "scripts/lint" ]]; then
+    ./scripts/lint --staged --check-only
+else
+    echo "❌ Error: scripts/lint not found or not executable"
+    exit 1
+fi
+
+lint_result=$?
+
+if [[ $lint_result -eq 0 ]]; then
+    echo "✅ Pre-commit linting passed!"
+else
+    echo "❌ Pre-commit linting failed!"
+    echo ""
+    echo "💡 To fix issues automatically, run:"
+    echo "   scripts/lint --staged --fix"
+    echo "   git add ."
+    echo ""
+    echo "Or to skip linting for this commit:"
+    echo "   git commit --no-verify"
+    exit 1
+fi
+EOF
+
+# Make the hook executable
+chmod +x .git/hooks/pre-commit
+
+echo "✅ Pre-commit hook installed successfully!"
+echo ""
+echo "🚀 Now your commits will be automatically linted."
+echo ""
+echo "💡 Useful commands:"
+echo "   git commit              # Normal commit with linting"
+echo "   git commit --no-verify  # Skip pre-commit hooks"
+echo "   scripts/lint --staged --fix  # Fix staged file issues"
+echo ""
+echo "📝 The hook runs: scripts/lint --staged --check-only"
