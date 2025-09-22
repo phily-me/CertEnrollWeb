@@ -20,23 +20,23 @@
           name = "certsrvweb-lint-env";
           
           motd = ''
-            🔧 Certificate Server Web - Linting Environment
+            🔧 Dev Environment
             ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-            
-            Essential linting tools for this project:
-            ✅ shellcheck (shell scripts)    ✅ hadolint (Docker files)
-            ✅ markdownlint (markdown)       ✅ ruff + black (Python)
-            ✅ go fmt + go vet (Go)
-            
-            🚀 Quick start:
-              ./lint           # Check all files
-              ./lint --fix     # Fix issues automatically  
-              ./lint --help    # See all options
-            
-            📦 Need more tools? Add to flake.nix packages:
-              nodejs, nodePackages.{eslint,prettier,typescript}
-              mypy, python3Packages.flake8, cargo, rustc, ruby, etc.
-              
+
+            Available linting tools:
+            ✅ shellcheck, hadolint, markdownlint
+            ✅ eslint, prettier, typescript
+            ✅ ruff, black, mypy
+            ✅ go fmt, go vet
+
+            🚀 Quick commands:
+              lint            # Check code (dry-run, no changes)
+              lint-fix        # Check and fix issues automatically
+              setup-hooks     # Install pre-commit hooks
+
+            💡 The lint script auto-detects project type and runs
+               appropriate tools. Use 'lint --help' for all options.
+
           '';
           
           packages = with pkgs; [
@@ -44,17 +44,24 @@
             bash
             git
             curl
-            
+
             # Essential linting tools (fast to build/download)
             shellcheck        # Shell script linting
-            hadolint         # Docker linting  
+            hadolint         # Docker linting
             nodePackages.markdownlint-cli  # Markdown linting
-            
-            # Python ecosystem (essential tools)
+
+            # JavaScript/TypeScript ecosystem
+            nodejs            # Node.js runtime
+            nodePackages.eslint  # JavaScript linter
+            nodePackages.prettier  # Code formatter
+            nodePackages.typescript  # TypeScript compiler
+
+            # Python ecosystem
             python3
             ruff             # Fast Python linter/formatter
             black            # Python code formatter
-            
+            mypy             # Python type checker
+
             # Go tools (lightweight, includes gofmt/go vet)
             go
           ];
@@ -62,23 +69,17 @@
           commands = [
             {
               name = "lint";
-              help = "Run comprehensive code linting across all supported languages";
-              command = "./lint $@";
+              help = "Run linters in dry-run mode (check only, no modifications)";
+              command = ''
+                ./lint --check-only "$@"
+              '';
             }
             {
               name = "lint-fix";
-              help = "Auto-fix linting issues where possible";
-              command = "./lint --fix";
-            }
-            {
-              name = "lint-strict";
-              help = "Run linting with strict rules (warnings as errors)";
-              command = "./lint --strict";
-            }
-            {
-              name = "lint-staged";
-              help = "Lint only staged files (useful for pre-commit hooks)";
-              command = "./lint --staged";
+              help = "Run linters and auto-fix issues where possible";
+              command = ''
+                ./lint --fix "$@"
+              '';
             }
             {
               name = "setup-hooks";
