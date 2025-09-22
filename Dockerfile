@@ -1,13 +1,13 @@
-FROM alpine:latest
+FROM alpine:3.20
 
 # Install nginx and WebDAV module from same Alpine repos
 RUN apk update && \
     apk add --no-cache \
-    nginx \
-    nginx-mod-http-dav-ext \
-    su-exec \
-    openssl \
-    shadow
+    nginx=1.26.3-r0 \
+    nginx-mod-http-dav-ext=1.26.3-r0 \
+    su-exec=0.2-r3 \
+    openssl=3.3.4-r0 \
+    shadow=4.15.1-r0
 
 # Create nginx user and group with build-time UID and GID
 RUN addgroup -g 1000 nginx-user && \

@@ -1,6 +1,7 @@
 # Zertifikats-Server - certsrvweb
 
-Hey Gordan! Hier ist dein Zertifikats-Server Setup. Läuft super mit Portainer und ist perfekt für Windows Server Integration.
+Hey Gordan! Hier ist dein Zertifikats-Server Setup. Läuft super mit Portainer
+und ist perfekt für Windows Server Integration.
 
 ## Was macht das Ding?
 
@@ -33,12 +34,11 @@ volumes:
   cert-data:
 ```
 
-4. **Environment Variables setzen:**
+1. **Environment Variables setzen:**
    - `USER_WEBDAV`: Dein WebDAV Username
    - `PASS_WEBDAV`: Dein WebDAV Passwort
 
-5. **Deploy** klicken - Portainer pullt automatisch aus Git und baut das Image!
-
+1. **Deploy** klicken - Portainer pullt automatisch aus Git und baut das Image!
 
 ## Windows Server Integration
 
@@ -48,8 +48,8 @@ volumes:
 
 | Service | Docker Port | Windows Zugriff | Zweck |
 |---------|------------|-----------------|-------|
-| HTTP | 80 (intern) → 10080 (extern) | `http://YOUR-DOCKER-HOST:10080/` | Download von Zertifikaten |
-| WebDAV | 8080 (intern) → 18080 (extern) | `http://YOUR-DOCKER-HOST:18080/` | Upload von Zertifikaten |
+| HTTP | 80→10080 | `http://YOUR-DOCKER-HOST:10080/` | Download |
+| WebDAV | 8080→18080 | `http://YOUR-DOCKER-HOST:18080/` | Upload |
 
 ### Windows PowerShell Upload
 
@@ -63,11 +63,13 @@ $pass = "deinpasswort"
 
 Invoke-RestMethod -Uri "http://$server:18080/rootca.crt" `
   -Method PUT `
-  -Credential (New-Object System.Management.Automation.PSCredential($user, (ConvertTo-SecureString $pass -AsPlainText -Force))) `
+  -Credential (New-Object System.Management.Automation.PSCredential($user, `
+    (ConvertTo-SecureString $pass -AsPlainText -Force))) `
   -InFile "C:\PKI\rootca.crt"
 
 # Bulk Upload aller CRT-Dateien
-$cred = New-Object System.Management.Automation.PSCredential($user, (ConvertTo-SecureString $pass -AsPlainText -Force))
+$cred = New-Object System.Management.Automation.PSCredential($user, `
+  (ConvertTo-SecureString $pass -AsPlainText -Force))
 
 Get-ChildItem "C:\PKI\*.crt" | ForEach-Object {
     Write-Host "Uploading $($_.Name)..."
@@ -78,7 +80,8 @@ Get-ChildItem "C:\PKI\*.crt" | ForEach-Object {
           -InFile $_.FullName
         Write-Host "✅ $($_.Name) uploaded" -ForegroundColor Green
     } catch {
-        Write-Host "❌ $($_.Name) failed: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "❌ $($_.Name) failed: $($_.Exception.Message)" `
+          -ForegroundColor Red
     }
 }
 ```
@@ -100,6 +103,7 @@ net use Z: /delete
 ### Automatisierung mit Scheduled Task
 
 **Erstelle `upload-certs.ps1`:**
+
 ```powershell
 # Automatischer Upload alle 4 Stunden
 $server = "YOUR-DOCKER-HOST"
@@ -107,33 +111,46 @@ $sourceDir = "C:\PKI"
 $user = "gordan" 
 $pass = "deinpasswort"
 
-$cred = New-Object System.Management.Automation.PSCredential($user, (ConvertTo-SecureString $pass -AsPlainText -Force))
+$cred = New-Object System.Management.Automation.PSCredential($user, `
+  (ConvertTo-SecureString $pass -AsPlainText -Force))
 
 # Upload aller neuen/geänderten Zertifikate
-Get-ChildItem "$sourceDir\*.crt", "$sourceDir\*.crl" | Where-Object { $_.LastWriteTime -gt (Get-Date).AddHours(-4) } | ForEach-Object {
+Get-ChildItem "$sourceDir\*.crt", "$sourceDir\*.crl" | `
+  Where-Object { $_.LastWriteTime -gt (Get-Date).AddHours(-4) } | `
+  ForEach-Object {
     Write-Host "$(Get-Date) - Uploading $($_.Name)..."
     try {
-        Invoke-RestMethod -Uri "http://$server:18080/$($_.Name)" -Method PUT -Credential $cred -InFile $_.FullName
-        Write-EventLog -LogName Application -Source "CertUpload" -EventId 1 -Message "Successfully uploaded $($_.Name)"
+        Invoke-RestMethod -Uri "http://$server:18080/$($_.Name)" `
+          -Method PUT -Credential $cred -InFile $_.FullName
+        Write-EventLog -LogName Application -Source "CertUpload" `
+          -EventId 1 -Message "Successfully uploaded $($_.Name)"
     } catch {
-        Write-EventLog -LogName Application -Source "CertUpload" -EventId 2 -EntryType Error -Message "Failed to upload $($_.Name): $($_.Exception.Message)"
+        Write-EventLog -LogName Application -Source "CertUpload" `
+          -EventId 2 -EntryType Error `
+          -Message "Failed to upload $($_.Name): $($_.Exception.Message)"
     }
 }
 ```
 
 **Scheduled Task erstellen:**
+
 ```cmd
-schtasks /create /tn "Zertifikat Upload" /tr "powershell.exe -ExecutionPolicy Bypass -File C:\Scripts\upload-certs.ps1" /sc hourly /it /ru SYSTEM
+schtasks /create /tn "Zertifikat Upload" ^
+  /tr "powershell.exe -ExecutionPolicy Bypass ^
+    -File C:\Scripts\upload-certs.ps1" ^
+  /sc hourly /it /ru SYSTEM
 ```
 
 ## Download der Zertifikate
 
 ### Für Clients/Browser
-```
+
+```text
 http://YOUR-DOCKER-HOST:10080/myfile.crt
 ```
 
 ### Windows PowerShell Download
+
 ```powershell
 # Single Download
 Invoke-WebRequest -Uri "http://YOUR-DOCKER-HOST:10080/myfile.crt" -OutFile "C:\Downloads\myfile.crt"
