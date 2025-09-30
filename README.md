@@ -107,8 +107,8 @@ net use Z: /delete
 ```powershell
 # Automatischer Upload alle 4 Stunden
 $server = "YOUR-DOCKER-HOST"
-$sourceDir = "C:\PKI"
-$user = "gordan" 
+$sourceDir = "C:\Windows\System32\certsrv\CertEnroll"
+$user = "svc_certenrollweb-webdav" 
 $pass = "deinpasswort"
 
 $cred = New-Object System.Management.Automation.PSCredential($user, `
