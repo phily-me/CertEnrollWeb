@@ -1,4 +1,4 @@
-# Zertifikats-Server - certsrvweb
+# Zertifikats-Server - CertEnrollWeb
 
 Hey Gordan! Hier ist dein Zertifikats-Server Setup. Läuft super mit Portainer
 und ist perfekt für Windows Server Integration.
@@ -11,14 +11,14 @@ und ist perfekt für Windows Server Integration.
 ## Portainer Deployment
 
 1. **In Portainer → Stacks → Add Stack**
-2. **Name:** `certsrvweb`
+2. **Name:** `CertEnrollWeb`
 3. **Paste diesen Code:**
 
 ```yaml
 services:
-  certsrvweb:
+  CertEnrollWeb:
     build:
-      context: https://github.com/phily-me/certsrvweb.git  # Dieses git repo
+      context: https://github.com/phily-me/CertEnrollWeb.git  # Dieses git repo
       dockerfile: Dockerfile
     ports:
       - "10080:80"     # HTTP Download (öffentlich)
