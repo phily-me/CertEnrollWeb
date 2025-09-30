@@ -56,34 +56,87 @@ volumes:
 ```powershell
 # === Zertifikate hochladen ===
 
-# Single File Upload
+# === Konfiguration ===
 $server = "YOUR-DOCKER-HOST"
-$user = "gordan"
+$port = 18080
+$user = "svc_certenrollweb-webdav"
 $pass = "deinpasswort"
+$sourceDir = "C:\Windows\System32\certsrv\CertEnroll"
+$filePattern = @("*.crt", "*.crl")
+$hoursBack = 4  # Upload files modified in the last X hours (0 = alle, die gefunden werden)
+$eventLogSource = "ZMT"
+$eventLogName = "Application"
 
-Invoke-RestMethod -Uri "http://$server:18080/myfile.crt" `
-  -Method PUT `
-  -Credential (New-Object System.Management.Automation.PSCredential($user, `
-    (ConvertTo-SecureString $pass -AsPlainText -Force))) `
-  -InFile "C:\PKI\myfile.crt"
+# Check if event source exists
+$eventSourceExists = $false
+try {
+    $eventSourceExists = [System.Diagnostics.EventLog]::SourceExists($eventLogSource)
+} catch {
+    Write-Warning "Cannot check event source existence. Continuing without event logging."
+}
 
-# Bulk Upload aller CRT-Dateien
+# If event source doesn't exist, warn user and exit
+if (-not $eventSourceExists) {
+    Write-Warning "Event source '$eventLogSource' is not registered."
+    Write-Warning "To enable event logging, run as Administrator once:"
+    Write-Warning "  New-EventLog -LogName $eventLogName -Source $eventLogSource"
+    exit 1
+}
+
+# Create credentials
 $cred = New-Object System.Management.Automation.PSCredential($user, `
-  (ConvertTo-SecureString $pass -AsPlainText -Force))
+    (ConvertTo-SecureString $pass -AsPlainText -Force))
 
-Get-ChildItem "C:\PKI\*.crt" | ForEach-Object {
-    Write-Host "Uploading $($_.Name)..."
+# Build file filter
+$files = Get-ChildItem $sourceDir -Include $filePattern -Recurse
+
+# Apply time filter if hoursBack > 0
+if ($hoursBack -gt 0) {
+    $cutoffTime = (Get-Date).AddHours(-$hoursBack)
+    $files = $files | Where-Object { $_.LastWriteTime -gt $cutoffTime }
+    Write-Host "Uploading files modified in the last $hoursBack hours..."
+} else {
+    Write-Host "Uploading all certificate files..."
+}
+
+# Upload files
+$successCount = 0
+$failCount = 0
+
+foreach ($file in $files) {
+    Write-Host "$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') - Uploading $($file.Name)..."
+    
     try {
-        Invoke-RestMethod -Uri "http://$server:18080/$($_.Name)" `
-          -Method PUT `
-          -Credential $cred `
-          -InFile $_.FullName
-        Write-Host "✅ $($_.Name) uploaded" -ForegroundColor Green
+        $uri = "http://${server}:${port}/$($file.Name)"
+        Invoke-RestMethod -Uri $uri `
+            -Method PUT `
+            -Credential $cred `
+            -InFile $file.FullName `
+            -TimeoutSec 30
+        
+        Write-Host "  ✅ Successfully uploaded $($file.Name)" -ForegroundColor Green
+        $successCount++
+        
+        Write-EventLog -LogName $eventLogName -Source $eventLogSource `
+                    -EventId 1 -EntryType Information `
+                    -Message "Successfully uploaded $($file.Name) to $uri"        
     } catch {
-        Write-Host "❌ $($_.Name) failed: $($_.Exception.Message)" `
-          -ForegroundColor Red
+        Write-Host "  ❌ Failed to upload $($file.Name): $($_.Exception.Message)" `
+            -ForegroundColor Red
+        $failCount++
+
+        Write-EventLog -LogName $eventLogName -Source $eventLogSource `
+                    -EventId 2 -EntryType Error `
+                    -Message "Failed to upload $($file.Name): $($_.Exception.Message)"
     }
 }
+
+# Summary
+Write-Host "`n=== Upload Summary ===" -ForegroundColor Cyan
+Write-Host "Total files processed: $($files.Count)"
+Write-Host "Successful uploads: $successCount" -ForegroundColor Green
+Write-Host "Failed uploads: $failCount" -ForegroundColor $(if ($failCount -gt 0) { "Red" } else { "Green" })
+
 ```
 
 ### Als Netzlaufwerk einbinden
