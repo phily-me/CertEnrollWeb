@@ -24,7 +24,7 @@ services:
       - "10080:80"     # HTTP Download (öffentlich)
       - "18080:8080"   # WebDAV Upload (authentifiziert)
     volumes:
-      - cert-data:/var/www/certsrv
+      - cert-data:/var/www/CertEnroll
     environment:
       - USER_WEBDAV=${USER_WEBDAV}     # WebDAV Username
       - PASS_WEBDAV=${PASS_WEBDAV}     # WebDAV Passwort
