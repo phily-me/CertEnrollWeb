@@ -1,10 +1,10 @@
 services:
-  certsrvweb:
+  certenrollweb:
     build:
       context: .
       dockerfile: Dockerfile
     environment:
-      - USER_WEBDAV=gordan
+      - USER_WEBDAV=svc_certenrollweb-webdav
       - PASS_WEBDAV=securepassword123
       - PUID=${UID:-1000}
       - PGID=${GID:-1000}
@@ -12,7 +12,7 @@ services:
       - "80"
       - "8080" # WebDAV Port
     volumes:
-      - cert-data:/var/www/certsrv
+      - cert-data:/var/www/CertEnroll
     restart: unless-stopped
 
 volumes:
