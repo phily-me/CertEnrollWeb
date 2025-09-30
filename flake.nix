@@ -1,5 +1,5 @@
 {
-  description = "Certificate Server Web - Development environment with comprehensive linting tools";
+  description = "Certificate Enroll Web Server - Development environment with comprehensive linting tools";
 
   inputs = {
     flake-parts.url = "github:hercules-ci/flake-parts";
@@ -17,7 +17,7 @@
       
       perSystem = { config, self', inputs', pkgs, system, ... }: {
         devshells.default = {
-          name = "certsrvweb-lint-env";
+          name = "certenrollweb-lint-env";
           
           motd = ''
             🔧 Dev Environment
