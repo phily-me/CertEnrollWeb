@@ -13,7 +13,7 @@ if [ "$PUID" != "1000" ] || [ "$PGID" != "1000" ]; then
     
     # Fix ownership of nginx directories
     chown -R nginx-user:nginx-user \
-        /var/www/certsrv \
+        /var/www/CertEnroll \
         /var/cache/nginx \
         /var/log/nginx \
         /var/lib/nginx \
@@ -38,9 +38,9 @@ chown nginx-user:nginx-user /var/lib/nginx/htpasswd
 echo "✅ htpasswd created"
 
 # Ensure directories exist with correct permissions
-mkdir -p /var/www/certsrv /var/lib/nginx/logs
-chmod 755 /var/www/certsrv /var/lib/nginx/logs
-chown nginx-user:nginx-user /var/www/certsrv
+mkdir -p /var/www/CertEnroll /var/lib/nginx/logs
+chmod 755 /var/www/CertEnroll /var/lib/nginx/logs
+chown nginx-user:nginx-user /var/www/CertEnroll
 
 # Create error log file for nginx startup check
 touch /var/lib/nginx/logs/error.log
