@@ -15,12 +15,12 @@ RUN addgroup -g 1000 nginx-user && \
 
 
 # Create necessary directories with correct permissions and ownership for nginx-user
-RUN mkdir -p /var/www/certsrv \
+RUN mkdir -p /var/www/CertEnroll \
     /var/cache/nginx \
     /var/log/nginx \
     /var/lib/nginx \
     /run/nginx && \
-    chown -R nginx-user:nginx-user /var/www/certsrv \
+    chown -R nginx-user:nginx-user /var/www/CertEnroll \
     /var/cache/nginx \
     /var/log/nginx \
     /var/lib/nginx \
